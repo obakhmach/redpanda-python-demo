@@ -36,37 +36,6 @@ def get_logger(log_level: int) -> Logger:
 
     return logger
 
-
-def execute_with_retries(
-    retries: int, retries_timeout: int, logger: Logger
-) -> Callable:
-    """A helper decorator to wrap some execution with retry logic
-    """
-    def decorator(f: Callable) -> Callable:
-        def wrapper(*args, **kwargs) -> Any:
-            nonlocal retries
-            nonlocal retries_timeout
-            nonlocal logger
-
-            while retries >= 1:
-                try:
-                    return f(*args, **kwargs)
-
-                except Exception as e:
-                    message: str = f"Received exception {e} on retry."
-
-                    logger.warning(message)
-
-                time.sleep(retries_timeout)
-                retries -= 1
-
-            return f(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
 def mock_servo_sys_information() -> Dict:
     mock_id: str = MOCK_SERVO_ID
     mock_datetime: str = str(datetime.now())
@@ -210,12 +179,7 @@ def main(
 
     redpanda_server: str = f"{redpanda_host}:{redpanda_port}"
 
-    retries: int = 10
-    retries_timeout = 3
-
-    producer: KafkaProducer = execute_with_retries(retries, retries_timeout, logger)(
-        KafkaProducer
-    )(bootstrap_servers=[redpanda_server])
+    producer: KafkaProducer = KafkaProducer(bootstrap_servers=[redpanda_server])
 
     try:
         logger.info(f"Creating a topic: {redpanda_topic}")
