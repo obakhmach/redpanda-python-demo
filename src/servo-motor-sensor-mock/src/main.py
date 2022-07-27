@@ -5,8 +5,7 @@ import time
 import uuid
 from datetime import datetime
 from logging import Logger, getLogger
-from typing import Dict, Callable, Any
-from functools import wraps
+from typing import Dict
 
 import click
 from kafka import KafkaAdminClient, KafkaProducer
@@ -38,14 +37,14 @@ def get_logger(log_level: int) -> Logger:
 
 def mock_servo_sys_information() -> Dict:
     mock_id: str = MOCK_SERVO_ID
-    mock_datetime: str = str(datetime.now())
+    mock_timestamp: float = time.time()
     mock_iterruption_count: int = random.randint(0, 10)
     mock_average_angle_speed: float = random.uniform(50, 75)
     mock_average_angle_momentum: float = random.uniform(1, 2)
 
     return {
         "id": mock_id,
-        "datetime": mock_datetime,
+        "timestamp": mock_timestamp,
         "iterruptionCount": mock_iterruption_count,
         "averageAngleSpeed": mock_average_angle_speed,
         "averageAngleMomentum": mock_average_angle_momentum,
@@ -114,7 +113,7 @@ def mock_servo_sys_info_producer(
             )
         )
         logger.info(
-            '\t| Datetime -- "{}"'.format(mocked_servo_sys_information.get("datetime"))
+            '\t| Timestamp -- "{}"'.format(mocked_servo_sys_information.get("timestamp"))
         )
         logger.info(
             '\t| Iterruption count -- "{}"'.format(

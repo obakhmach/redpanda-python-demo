@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_HOST=redpanda
-      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=29092
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=9092
       - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_TOPIC=servo_sys_info_front_right
       - SERVO_MOTOR_SENSOR_MOCK_SERVO_POSITION=FRONT_RIGHT
       - SERVO_MOTOR_SENSOR_MOCK_LOG_LEVEL=10
@@ -24,7 +24,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_HOST=redpanda
-      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=29092
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=9092
       - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_TOPIC=servo_sys_info_front_left
       - SERVO_MOTOR_SENSOR_MOCK_SERVO_POSITION=FRONT_RIGHT
       - SERVO_MOTOR_SENSOR_MOCK_LOG_LEVEL=10
@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_HOST=redpanda
-      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=29092
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=9092
       - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_TOPIC=servo_sys_info_back_right
       - SERVO_MOTOR_SENSOR_MOCK_SERVO_POSITION=FRONT_RIGHT
       - SERVO_MOTOR_SENSOR_MOCK_LOG_LEVEL=10
@@ -58,7 +58,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_HOST=redpanda
-      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=29092
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=9092
       - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_TOPIC=servo_sys_info_back_left
       - SERVO_MOTOR_SENSOR_MOCK_SERVO_POSITION=FRONT_RIGHT
       - SERVO_MOTOR_SENSOR_MOCK_LOG_LEVEL=10
@@ -75,23 +75,19 @@ services:
     container_name: redpanda
     hostname: redpanda
     command:
-    - redpanda
-    - start
-    - --smp
-    - '1'
-    - --reserve-memory
-    - 0M
+    - redpanda start
     - --overprovisioned
-    - --node-id
-    - '0'
-    - --kafka-addr
-    - INSIDE://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
-    - --advertise-kafka-addr
-    - INSIDE://redpanda:29092,OUTSIDE://localhost:9092
-    - --pandaproxy-addr
-    - INSIDE://0.0.0.0:28082,OUTSIDE://0.0.0.0:8082
-    - --advertise-pandaproxy-addr
-    - INSIDE://redpanda:28082,OUTSIDE://localhost:8082
+    - --smp 1
+    - --memory 1G
+    - --reserve-memory 0M
+    - --node-id 0
+    - --check=false
+    - --kafka-addr 0.0.0.0:9092
+    - --advertise-kafka-addr redpanda:9092
+    - --pandaproxy-addr 0.0.0.0:8082
+    - --advertise-pandaproxy-addr redpanda:8082
+    - --set redpanda.enable_transactions=true
+    - --set redpanda.enable_idempotence=true
     ports:
     - 8081:8081
     - 8082:8082
@@ -107,6 +103,15 @@ services:
     networks:
       - internal
     healthcheck: { test: curl -f localhost:9644/v1/status/ready, interval: 1s, start_period: 30s }
+
+  materialized:
+    image: materialize/materialized:v0.15.0
+    container_name: materialized
+    command: -w2 --disable-telemetry
+    ports:
+      - 6875:6875
+    networks:
+      - internal
 
 networks:
   internal:
