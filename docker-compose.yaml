@@ -1,0 +1,112 @@
+version: '3.7'
+services:
+  servo-motor-sensor-mock-front-right:
+    container_name: servo-motor-sensor-mock-front-right
+    build:
+      context: src/servo-motor-sensor-mock
+      dockerfile: Dockerfile
+    environment:
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_HOST=redpanda
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=29092
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_TOPIC=servo_sys_info_front_right
+      - SERVO_MOTOR_SENSOR_MOCK_SERVO_POSITION=FRONT_RIGHT
+      - SERVO_MOTOR_SENSOR_MOCK_LOG_LEVEL=10
+    networks:
+      - internal
+    depends_on:
+      redpanda:
+        condition: service_started
+
+  servo-motor-sensor-mock-front-left:
+    container_name: servo-motor-sensor-mock-front-left
+    build:
+      context: src/servo-motor-sensor-mock
+      dockerfile: Dockerfile
+    environment:
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_HOST=redpanda
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=29092
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_TOPIC=servo_sys_info_front_left
+      - SERVO_MOTOR_SENSOR_MOCK_SERVO_POSITION=FRONT_RIGHT
+      - SERVO_MOTOR_SENSOR_MOCK_LOG_LEVEL=10
+    networks:
+      - internal
+    depends_on:
+      redpanda:
+        condition: service_started
+
+  servo-motor-sensor-mock-back-right:
+    container_name: servo-motor-sensor-mock-back-right
+    build:
+      context: src/servo-motor-sensor-mock
+      dockerfile: Dockerfile
+    environment:
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_HOST=redpanda
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=29092
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_TOPIC=servo_sys_info_back_right
+      - SERVO_MOTOR_SENSOR_MOCK_SERVO_POSITION=FRONT_RIGHT
+      - SERVO_MOTOR_SENSOR_MOCK_LOG_LEVEL=10
+    networks:
+      - internal
+    depends_on:
+      redpanda:
+        condition: service_started
+
+  servo-motor-sensor-mock-back-left:
+    container_name: servo-motor-sensor-mock-back-left
+    build:
+      context: src/servo-motor-sensor-mock
+      dockerfile: Dockerfile
+    environment:
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_HOST=redpanda
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_PORT=29092
+      - SERVO_MOTOR_SENSOR_MOCK_REDPANDA_TOPIC=servo_sys_info_back_left
+      - SERVO_MOTOR_SENSOR_MOCK_SERVO_POSITION=FRONT_RIGHT
+      - SERVO_MOTOR_SENSOR_MOCK_LOG_LEVEL=10
+    networks:
+      - internal
+    depends_on:
+      redpanda:
+        condition: service_started
+      
+    
+  redpanda:
+    # NOTE: Please use the latest version here!
+    image: docker.redpanda.com/vectorized/redpanda:v21.11.15
+    container_name: redpanda
+    hostname: redpanda
+    command:
+    - redpanda
+    - start
+    - --smp
+    - '1'
+    - --reserve-memory
+    - 0M
+    - --overprovisioned
+    - --node-id
+    - '0'
+    - --kafka-addr
+    - INSIDE://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+    - --advertise-kafka-addr
+    - INSIDE://redpanda:29092,OUTSIDE://localhost:9092
+    - --pandaproxy-addr
+    - INSIDE://0.0.0.0:28082,OUTSIDE://0.0.0.0:8082
+    - --advertise-pandaproxy-addr
+    - INSIDE://redpanda:28082,OUTSIDE://localhost:8082
+    ports:
+    - 8081:8081
+    - 8082:8082
+    - 9092:9092
+    - 28082:28082
+    - 29092:29092
+    expose:
+      - "8081"
+      - "8082"
+      - "9093"
+      - "28082"
+      - "28092"
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
