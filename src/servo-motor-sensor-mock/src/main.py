@@ -3,7 +3,7 @@ import logging
 import random
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from logging import Logger, getLogger
 from typing import Dict
 
@@ -37,7 +37,7 @@ def get_logger(log_level: int) -> Logger:
 
 def mock_servo_sys_information() -> Dict:
     mock_id: str = MOCK_SERVO_ID
-    mock_timestamp: float = time.time()
+    mock_timestamp: str = str(datetime.now(timezone.utc))
     mock_iterruption_count: int = random.randint(0, 10)
     mock_average_angle_speed: float = random.uniform(50, 75)
     mock_average_angle_momentum: float = random.uniform(1, 2)

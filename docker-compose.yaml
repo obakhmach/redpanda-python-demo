@@ -75,25 +75,25 @@ services:
     container_name: redpanda
     hostname: redpanda
     command:
-    - redpanda start
-    - --overprovisioned
-    - --smp 1
-    - --memory 1G
-    - --reserve-memory 0M
-    - --node-id 0
-    - --check=false
-    - --kafka-addr 0.0.0.0:9092
-    - --advertise-kafka-addr redpanda:9092
-    - --pandaproxy-addr 0.0.0.0:8082
-    - --advertise-pandaproxy-addr redpanda:8082
-    - --set redpanda.enable_transactions=true
-    - --set redpanda.enable_idempotence=true
+      - redpanda start
+      - --overprovisioned
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --node-id 0
+      - --check=false
+      - --kafka-addr INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:29092
+      - --advertise-kafka-addr INSIDE://redpanda:9092,OUTSIDE://localhost:29092
+      - --pandaproxy-addr INSIDE://0.0.0.0:8082,OUTSIDE://0.0.0.0:28082
+      - --advertise-pandaproxy-addr INSIDE://0.0.0.0:8082,OUTSIDE://0.0.0.0:28082
+      - --set redpanda.enable_transactions=true
+      - --set redpanda.enable_idempotence=true
     ports:
     - 8081:8081
     - 8082:8082
     - 9092:9092
-    - 28082:28082
     - 29092:29092
+    - 28082:28082
     expose:
       - "8081"
       - "8082"
@@ -110,6 +110,19 @@ services:
     command: -w2 --disable-telemetry
     ports:
       - 6875:6875
+    networks:
+      - internal
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+  metabase:
+    image: metabase/metabase
+    container_name: metabase
+    depends_on:
+       - materialized
+    ports:
+      - 3030:3000
     networks:
       - internal
 
